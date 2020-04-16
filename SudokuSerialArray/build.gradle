@@ -1,0 +1,21 @@
+/*
+ * Gradle build for single threaded Sudoku solver.
+ */
+
+plugins {
+    id 'eclipse'
+    id 'scala'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation group: 'org.scala-lang', name: 'scala-library', version: '2.12.11'
+}
+
+task run(type: JavaExec, dependsOn: classes) {
+    main = 'sudoku.serial.SolveSerialArrayApp'
+    classpath sourceSets.main.runtimeClasspath
+}
