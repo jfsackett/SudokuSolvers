@@ -34,9 +34,9 @@ object SolveSerialArrayApp extends App {
   puzzles.foreach((puzzleStr : String) => {
     
 	// Parse puzzle line into 9x9 Array of initial candidate lists.
-  val allCands = Array.ofDim[List[Int]](9,9)
+  val initCands = Array.ofDim[List[Int]](9,9)
   for (ix <- 0 to 80) {
-    allCands(ix / 9)(ix % 9) = if (puzzleStr.charAt(ix) == '.') List() else List(puzzleStr.charAt(ix).asDigit)
+    initCands(ix / 9)(ix % 9) = if (puzzleStr.charAt(ix) == '.') List() else List(puzzleStr.charAt(ix).asDigit)
   }
 
 	// Printing Utilities
@@ -45,12 +45,15 @@ object SolveSerialArrayApp extends App {
 	// Output puzzle.
 	if (!quiet) {
 	  println("Puzzle:")
-	  allCands.map(printCandLine)
+	  initCands.map(printCandLine)
 	}
 
 //  val xs = (0 to 9).foldRight(List[Int]())((x, xs) => x :: xs)
 //  val xss = (0 to 9).foldRight(List(xs))((x, xss) => xs :: xss)
+	// Build row major index into candidate array.
   val ixRowMajor = (0 to 8).foldRight(List[List[(Int,Int)]]())((y, xxs) => (0 to 8).foldRight(List[(Int,Int)]())((x, xs) => (y,x) :: xs) :: xxs)
+
+  // Build column major index into candidate array.
   val ixColMajor = (0 to 8).foldRight(List[List[(Int,Int)]]())((y, xxs) => (0 to 8).foldRight(List[(Int,Int)]())((x, xs) => (x,y) :: xs) :: xxs)
 
   def cvtBase(num10:Int, newBase:Int) : String = {val q = num10 / newBase; val r = num10 % newBase; if (q == 0) r.toString else cvtBase(q, newBase) + r.toString} 
@@ -67,22 +70,114 @@ object SolveSerialArrayApp extends App {
     (t._2 / 10, t._2 % 10)
   }
 
+  // Build block major index into candidate array (blocks ordered in row major order).
   val ixBlockMajor = (0 to 8).foldRight(List[List[(Int,Int)]]())((y, xxs) => (0 to 8).foldRight(List[(Int,Int)]())((x, xs) => blockTuple(y * 9 + x) :: xs) :: xxs)
 
   // Find the remaining candidate values from a row's knowns; return list of candidates in each unknown cell.
   def findCands(row : List[(Int,Int)]) = {
     val allVals = (1 to 9).toList
-//    val rowCands = row.foldLeft(allVals)((cands,cell) => {val(y,x) = cell; if (allCands(y)(x).length == 1) cands.diff(allCands(y)(x)) else cands})
-    val rowCands = row.foldLeft(allVals)((cands,cell) => cell match {case (y,x) => if (allCands(y)(x).length == 1) cands.diff(allCands(y)(x)) else cands})
-    row.foreach{case (y,x) => allCands(y)(x) = if (allCands(y)(x).length == 0) rowCands else if (allCands(y)(x).length == 1) allCands(y)(x) else rowCands.intersect(allCands(y)(x))}
+//    val rowCands = row.foldLeft(allVals)((cands,cell) => {val(y,x) = cell; if (initCands(y)(x).length == 1) cands.diff(initCands(y)(x)) else cands})
+    val rowCands = row.foldLeft(allVals)((cands,cell) => cell match {case (y,x) => if (initCands(y)(x).length == 1) cands.diff(initCands(y)(x)) else cands})
+    row.foreach{case (y,x) => initCands(y)(x) = if (initCands(y)(x).length == 0) rowCands else if (initCands(y)(x).length == 1) initCands(y)(x) else rowCands.intersect(initCands(y)(x))}
   }
 
-	// Find row, column & block candidates.
+	// Intersect row, column & block candidates.
 	ixRowMajor.foreach(findCands)
 	ixColMajor.foreach(findCands)
 	ixBlockMajor.foreach(findCands)
 	
-	allCands.map(printCandLine)
+	initCands.map(printCandLine)
+//	val numCandsCurr = initCands.foldLeft(0)((l,xxs) => l + xxs.foldLeft(0)((m,xs) => m + xs.length))
+//	println("Num cands: " + numCandsCurr)
+	
+	// Place the initial list of candidates in the queue.	
+	var searchQueue = List(initCands)
+
+  // Remove single & unique candidates from a row .
+  def scrubSingles(cands : Array[Array[List[Int]]], ixs : List[(Int,Int)]) : Unit = {
+    // Fold function taking & returning tuple containing (multiple cands, all cands).
+    def findMultiples(t : (List[Int], List[Int]), xs : List[Int]) : (List[Int], List[Int]) =
+      (xs.filter(x => t._2.contains(x)) ::: t._1, xs ::: t._2)
+      
+    // Singles are candidate lists size 1.
+    val singles = ixs.foldLeft(List[Int]())((xs, cell) => cell match {case (y,x) => if (cands(y)(x).length == 1) cands(y)(x).head :: xs else xs})
+    println(singles)
+    // Folds across list, finding candidates listed multiple times.
+//    val mulTuple = puzzleCands.foldLeft(List[Int](), List[Int]())(findMultiples)
+//    // Uniques are all candidates diff multiples diff singles.
+//    val uniques = mulTuple._2.distinct.diff(mulTuple._1).diff(singles)
+//    // Remove singles & uniques from candidates.
+//    puzzleCands.map(xs => if (xs.length == 1) xs else xs.diff(singles))
+//    	.map(xs => if (xs.intersect(uniques) != Nil) xs.intersect(uniques) else xs)
+    
+//    // Singles are candidate lists size 1.
+//    val singles = puzzleCands.filter(xs => xs.length == 1).flatten
+//    // Folds across list, finding candidates listed multiple times.
+//    val mulTuple = puzzleCands.foldLeft(List[Int](), List[Int]())(findMultiples)
+//    // Uniques are all candidates diff multiples diff singles.
+//    val uniques = mulTuple._2.distinct.diff(mulTuple._1).diff(singles)
+//    // Remove singles & uniques from candidates.
+//    puzzleCands.map(xs => if (xs.length == 1) xs else xs.diff(singles))
+//    	.map(xs => if (xs.intersect(uniques) != Nil) xs.intersect(uniques) else xs)
+  }
+	
+  // Scrub rows, columns & blocks of candidates with input function.
+  def scrubCandidates(cands : Array[Array[List[Int]]], scrubFn : (Array[Array[List[Int]]], List[(Int,Int)]) => Unit) : Unit = {
+  	ixRowMajor.foreach(xs => scrubFn(cands, xs))
+//  	ixColMajor.foreach(scrubFn(cands))
+//  	ixBlockMajor.foreach(scrubFn(cands))
+//    var puzzleCands = puzzleCandsIn
+//    puzzleCands = puzzleCands.map(scrubFn)
+//  	puzzleCands = puzzleCands.transpose.map(scrubFn).transpose
+//  	transBlocks(transBlocks(puzzleCands).map(scrubFn))
+  }
+	
+	var numCandsCurr = 0
+	var numCandsPrev = 0
+	var validPuzzle = true;
+	// Loop until solved or search queue empty.
+	do {
+	  // Pop a list of candidates from the queue.
+	  val currCands = searchQueue.head
+	  searchQueue = searchQueue.drop(1)
+	  // Loop until no more candidates removed, scrubbing singles and column/row block constraints each iteration.
+	  do {
+	    // Count initial candidates.
+	    numCandsPrev = currCands.foldLeft(0)((s,xxs) => s + xxs.foldLeft(0)((t,xs) => t + xs.length))
+	    // Loop until no more candidates removed, scrubbing singles & uniques each iteration.
+	    do {
+//	      numCandsPrev = numCandsCurr        
+	      // Scrub singles and uniques from rows, columns & blocks.
+	      scrubCandidates(currCands, scrubSingles)
+	      // Count remaining candidates.
+	      numCandsCurr = currCands.foldLeft(0)((l,xxs) => l + xxs.foldLeft(0)((m,xs) => m + xs.length))
+//	      numCandsCurr = puzzleCands.flatten.flatten.length
+	    } while (numCandsCurr > 81 && numCandsCurr < numCandsPrev) 
+	    // Scrub block constraints from rows & columns.
+//      puzzleCands = scrubBlockConstraints(puzzleCands)
+//      puzzleCands = scrubBlockConstraints(puzzleCands.transpose).transpose
+//      // Scrub open tuples.
+//      puzzleCands = scrubCandidates(puzzleCands, scrubOpenTuples)
+//      // Scrub hidden tuples.
+//      puzzleCands = scrubCandidates(puzzleCands, scrubHiddenTuples)
+      // Check for puzzle validity & count remaining candidates.
+//      validPuzzle = isValidCands(puzzleCands)
+//      numCandsCurr = puzzleCands.flatten.flatten.length
+	      numCandsCurr = 81
+	      numCandsPrev = 82
+    } while (validPuzzle && numCandsCurr > 81 && numCandsCurr < numCandsPrev)
+//	  if (validPuzzle && numCandsCurr > 81) {
+//	    searchQueue = searchQueue ::: findSuccessors(puzzleCands)
+//	  }
+	} while ((numCandsCurr > 81 || !validPuzzle) && searchQueue.length > 0)
+
+	// Puzzle solved when 9 * 9 = 81 candidates remain.
+	if (numCandsCurr == 81 && validPuzzle) {
+//	  if (!quiet) { println("Solution:"); puzzleCands.map(printCandLine) }
+	}
+	else if (!quiet) println("Unsolvable Puzzle.") else print('x')
+
+  })
 /*
 	// Parse puzzle line into 9x9 List[List[Int]].
   val puzzleNums = puzzleStr.foldRight(List[Int]())((ch : Char, puzzNums : List[Int]) => (if (ch == '.') 0 else ch.asDigit) :: puzzNums)
@@ -151,7 +246,7 @@ object SolveSerialArrayApp extends App {
 	}
 	else if (!quiet) println("Unsolvable Puzzle.") else print('x')
 */
-  })
+	
   val totalTime = System.currentTimeMillis() - startTime
   println("\nTotal Runtime: " + totalTime + " ms")
   if (puzzles.length > 1) {
@@ -198,30 +293,23 @@ object SolveSerialArrayApp extends App {
 //  	transBlocks(transBlocks(puzzleCands.toList).par.map(scrubFn).toList)
 //  }
   
-  // Scrub rows, columns & blocks of candidates with input function.
-  def scrubCandidates(puzzleCandsIn : List[List[List[Int]]], scrubFn : List[List[Int]] => List[List[Int]]) : List[List[List[Int]]] = {
-    var puzzleCands = puzzleCandsIn
-    puzzleCands = puzzleCands.map(scrubFn)
-  	puzzleCands = puzzleCands.transpose.map(scrubFn).transpose
-  	transBlocks(transBlocks(puzzleCands).map(scrubFn))
-  }
   
-  // Remove single & unique candidates from a row .
-  def scrubSingles(puzzleCands : List[List[Int]]) : List[List[Int]] = {
-    // Fold function taking & returning tuple containing (multiple cands, all cands).
-    def findMultiples(t : (List[Int], List[Int]), xs : List[Int]) : (List[Int], List[Int]) =
-      (xs.filter(x => t._2.contains(x)) ::: t._1, xs ::: t._2)
-      
-    // Singles are candidate lists size 1.
-    val singles = puzzleCands.filter(xs => xs.length == 1).flatten
-    // Folds across list, finding candidates listed multiple times.
-    val mulTuple = puzzleCands.foldLeft(List[Int](), List[Int]())(findMultiples)
-    // Uniques are all candidates diff multiples diff singles.
-    val uniques = mulTuple._2.distinct.diff(mulTuple._1).diff(singles)
-    // Remove singles & uniques from candidates.
-    puzzleCands.map(xs => if (xs.length == 1) xs else xs.diff(singles))
-    	.map(xs => if (xs.intersect(uniques) != Nil) xs.intersect(uniques) else xs)
-  }
+//  // Remove single & unique candidates from a row .
+//  def scrubSingles(puzzleCands : List[List[Int]]) : List[List[Int]] = {
+//    // Fold function taking & returning tuple containing (multiple cands, all cands).
+//    def findMultiples(t : (List[Int], List[Int]), xs : List[Int]) : (List[Int], List[Int]) =
+//      (xs.filter(x => t._2.contains(x)) ::: t._1, xs ::: t._2)
+//      
+//    // Singles are candidate lists size 1.
+//    val singles = puzzleCands.filter(xs => xs.length == 1).flatten
+//    // Folds across list, finding candidates listed multiple times.
+//    val mulTuple = puzzleCands.foldLeft(List[Int](), List[Int]())(findMultiples)
+//    // Uniques are all candidates diff multiples diff singles.
+//    val uniques = mulTuple._2.distinct.diff(mulTuple._1).diff(singles)
+//    // Remove singles & uniques from candidates.
+//    puzzleCands.map(xs => if (xs.length == 1) xs else xs.diff(singles))
+//    	.map(xs => if (xs.intersect(uniques) != Nil) xs.intersect(uniques) else xs)
+//  }
 
   // Scrub all block constraints from all rows.
   def scrubBlockConstraints(puzzleCandsIn : List[List[List[Int]]]) : List[List[List[Int]]] = {
