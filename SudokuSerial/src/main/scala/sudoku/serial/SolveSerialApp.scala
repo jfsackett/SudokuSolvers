@@ -26,6 +26,9 @@ object SolveSerialApp extends App {
   // Quiet flag indicates whether puzzles are printed.
   val quiet = args.length > 1 && args(0).startsWith("-q")
 
+  // Build cache holding powerset row cell indexes, 2 <= length <= 3.
+  val ixSubsets = (0 to 8).toSet.subsets.filter(xs => xs.size > 1 && xs.size < 4).map(xs => xs.toSet).toList
+
   // Set start time.
   val startTime =  System.currentTimeMillis()
 
@@ -56,14 +59,13 @@ object SolveSerialApp extends App {
 	// Place the initial list of candidates in the queue.
 	var searchQueue = List(puzzleCands)
 
-	var numCandsCurr = 0
-	var numCandsPrev = 0
-	var validPuzzle = true;
+	var numCandsCurr = 0; var numCandsPrev = 0; var validPuzzle = true; var first = true
 	// Loop until solved or search queue empty.
 	do {
 	  // Pop a list of candidates from the queue.
 	  puzzleCands = searchQueue.head
 	  searchQueue = searchQueue.drop(1)
+
 	  // Loop until no more candidates removed, scrubbing singles and column/row block constraints each iteration.
 	  do {
 	    // Count initial candidates.
@@ -80,14 +82,19 @@ object SolveSerialApp extends App {
       puzzleCands = scrubBlockConstraints(puzzleCands)
       // Scrub open tuples.
       puzzleCands = scrubCandidates(puzzleCands, scrubOpenTuples)
-      // Scrub hidden tuples.
-      puzzleCands = scrubCandidates(puzzleCands, scrubHiddenTuples)
+	    // Count remaining candidates.
+      numCandsCurr = puzzleCands.flatten.flatten.length
+      // Scrub hidden tuples, need only be done once per puzzle.
+      if (first) { first = false
+            puzzleCands = scrubCandidates(puzzleCands, scrubHiddenTuples)
+      }
       // Check for puzzle validity & count remaining candidates.
       validPuzzle = isValidCands(puzzleCands)
       numCandsCurr = puzzleCands.flatten.flatten.length
     } while (validPuzzle && numCandsCurr > 81 && numCandsCurr < numCandsPrev)
 	  if (validPuzzle && numCandsCurr > 81) {
-	    searchQueue = searchQueue ::: findSuccessors(puzzleCands)
+      searchQueue = findSuccessors(puzzleCands) ::: searchQueue    // depth-first
+//	    searchQueue = searchQueue ::: findSuccessors(puzzleCands)    // breadth-first
 	  }
 	} while ((numCandsCurr > 81 || !validPuzzle) && searchQueue.length > 0)
 
@@ -145,20 +152,20 @@ object SolveSerialApp extends App {
   	transBlocks(transBlocks(puzzleCands).map(scrubFn))
   }
 
-  // Remove single & unique candidates from a row .
-  def scrubSingles(puzzleCands : List[List[Int]]) : List[List[Int]] = {
+  // Remove single & unique candidates from a row.
+  def scrubSingles(rowCands : List[List[Int]]) : List[List[Int]] = {
     // Fold function taking & returning tuple containing (multiple cands, all cands).
     def findMultiples(t : (List[Int], List[Int]), xs : List[Int]) : (List[Int], List[Int]) =
       (xs.filter(x => t._2.contains(x)) ::: t._1, xs ::: t._2)
 
     // Singles are candidate lists size 1.
-    val singles = puzzleCands.filter(xs => xs.length == 1).flatten
+    val singles = rowCands.filter(xs => xs.length == 1).flatten
     // Folds across list, finding candidates listed multiple times.
-    val mulTuple = puzzleCands.foldLeft(List[Int](), List[Int]())(findMultiples)
+    val mulTuple = rowCands.foldLeft(List[Int](), List[Int]())(findMultiples)
     // Uniques are all candidates diff multiples diff singles.
     val uniques = mulTuple._2.distinct.diff(mulTuple._1).diff(singles)
     // Remove singles & uniques from candidates.
-    puzzleCands.map(xs => if (xs.length == 1) xs else xs.diff(singles))
+    rowCands.map(xs => if (xs.length == 1) xs else xs.diff(singles))
     	.map(xs => if (xs.intersect(uniques) != Nil) xs.intersect(uniques) else xs)
   }
 
@@ -206,6 +213,47 @@ object SolveSerialApp extends App {
     scrubBlocks(scrubBlocks(puzzleCandsIn).transpose).transpose
   }
 
+  // Finds & removes open tuple values from candidate lists. Open tuples where length == count in row.
+  def scrubOpenTuples(rowCands : List[List[Int]]) : List[List[Int]] = {
+    // Builds map of open tuples.
+    val openTuples = rowCands.foldLeft(Map[List[Int], Int]())((result : Map[List[Int], Int], cands : List[Int]) =>
+      if (cands.length > 1 && cands.length <= 4) result.get(cands) match {
+        case None => result + (cands -> 1)
+        case Some(count) => result + (cands -> (count + 1))
+      }
+      else result).filter(kv => kv._2 > 1 && kv._1.length == kv._2)
+
+    // Removes open tuple values from other candidate lists.
+    if (!openTuples.isEmpty)
+      rowCands.map(xs => if (openTuples.keySet.contains(xs)) xs else xs.filter(x => !openTuples.keySet.flatten.contains(x)))
+    else rowCands
+  }
+
+
+  // Finds & removes hidden tuple values from candidate lists. Hidden tuples are a set of candidates S s.t. instances exist in exactly |s| cells.
+  def scrubHiddenTuples(rowCands : List[List[Int]]) : List[List[Int]] = {
+    val cands = rowCands.toArray
+
+    // Function determines whether a set of cells contains all unknown cells (i.e., multiple candidates).
+    val multiCands = (xs : Set[Int]) => xs.foldLeft(true)((b, ix) => b && cands(ix).length > 1)
+
+    val ixMultiSubsets = ixSubsets.filter(multiCands)
+
+    // Process of subsets in powerset.
+    ixMultiSubsets.foreach(sx => {
+      // Collect candidate values from outside of subset cells.
+      val elimVals = (0 to 8).foldLeft(Set[Int]())((s : Set[Int], ix : Int) => if (!sx.contains(ix)) s ++ cands(ix) else s).toSeq
+      // Collect candidate values remaining in subset cells after subtracting those existing outside subset.
+      val candVals = sx.foldLeft(Set[Int]())((s : Set[Int], ix : Int) => s ++ (cands(ix).diff(elimVals)))
+      // If subset size == number of remaining candidates, hidden tuple found, remove other candidates.
+      if (candVals.size == sx.size) {
+        (0 to 8).foreach((ix : Int) => if (sx.contains(ix)) cands(ix) = cands(ix).diff(elimVals))
+      }
+    })
+
+    cands.toList
+  }
+
   // Checks for invalid puzzle states (i.e., empty candidate cells & duplicate singles).
   def isValidCands(puzzleCands : List[List[List[Int]]]) : Boolean = {
     // Checks if a row is valid.
@@ -218,54 +266,6 @@ object SolveSerialApp extends App {
     puzzleCands.foldRight(true)((row : List[List[Int]], valid : Boolean) => valid && isValid(row)) &&
     puzzleCands.transpose.foldRight(true)((xss : List[List[Int]], valid : Boolean) => valid && isValid(xss)) &&
     transBlocks(puzzleCands).foldRight(true)((xss : List[List[Int]], valid : Boolean) => valid && isValid(xss))
-  }
-
-  // Finds & removes open tuple values from candidate lists.
-  def scrubOpenTuples(puzzleCands : List[List[Int]]) : List[List[Int]] = {
-    // Builds map of open tuples.
-    val openTuples = puzzleCands.foldLeft(Map[List[Int], Int]())((result : Map[List[Int], Int], cands : List[Int]) =>
-      if (cands.length > 1 && cands.length <= 4) result.get(cands) match {
-        case None => result + (cands -> 1)
-        case Some(count) => result + (cands -> (count + 1))
-      }
-      else result).filter(kv => kv._2 > 1 && kv._1.length == kv._2)
-
-    // Removes open tuple values from other candidate lists.
-    if (!openTuples.isEmpty)
-      puzzleCands.map(xs => if (openTuples.keySet.contains(xs)) xs else xs.filter(x => !openTuples.keySet.flatten.contains(x)))
-    else puzzleCands
-  }
-
-  // Finds & removes hidden tuple values from candidate lists.
-  def scrubHiddenTuples(puzzleCands : List[List[Int]]) : List[List[Int]] = {
-    // Generate all combinations of the number in list.
-    def makeCombs(cands: List[Int]) = cands.foldLeft(List(List[Int]()))((result : List[List[Int]], cand : Int) =>
-      result ::: result.map(_ ::: List(cand)))
-
-    // Count the number of times each candidate appears.
-    val candCounts = puzzleCands.foldLeft(Map[Int, Int]())((result : Map[Int, Int], cands : List[Int]) =>
-      cands.foldLeft(result)((result : Map[Int, Int], cand : Int) => result.get(cand) match {
-        case None => result + (cand -> 1)
-        case Some(count) => result + (cand -> (count + 1))
-      }))
-
-    // Finds map of hidden tuples.
-    val hiddenTuples = puzzleCands.filter(_.length > 1).map(makeCombs).flatten.foldLeft(Map[List[Int], Int]())((result : Map[List[Int], Int], cands : List[Int]) =>
-      if (cands.length > 1 && cands.length <= 4) result.get(cands) match {
-        case None => result + (cands -> 1)
-        case Some(count) => result + (cands -> (count + 1))
-      }
-      else result).filter(kv => kv._2 > 1 && kv._1.length == kv._2 &&
-        kv._2 == kv._1.filter(cand => candCounts.get(cand) match {
-          case None => false
-          case Some(count) => kv._2 == count
-        }).length)
-
-    // Removes candidates outside of hidden tuple values from cells containing hidden tuples.
-    if (!hiddenTuples.isEmpty)
-      puzzleCands.map(cands => hiddenTuples.foldLeft(cands)((result : List[Int], entry : (List[Int], Int)) =>
-        if (cands.intersect(entry._1).length == entry._2) entry._1 else result))
-    else puzzleCands
   }
 
   // Find the successor states by making candidate assumptions from a given puzzle state.
