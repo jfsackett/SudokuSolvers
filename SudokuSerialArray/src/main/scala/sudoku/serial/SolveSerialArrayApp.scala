@@ -56,6 +56,10 @@ object SolveSerialArrayApp extends App {
   // Build block major index into candidate array cells (blocks ordered in row major order).
   val ixBlockMajor = (0 to 8).foldRight(List[List[(Int,Int)]]())((y, xxs) => (0 to 8).foldRight(List[(Int,Int)]())((x, xs) => blockTuple(y * 9 + x) :: xs) :: xxs)
 
+  // Build cache mapping indexes to its powerset cell indexes, 2 <= length <= 3.
+  val mapSubsets = (ixss : List[List[(Int,Int)]]) => ixss.foldLeft(Map[List[(Int,Int)], List[Set[(Int,Int)]]]())((kv, ixs) => kv + (ixs -> (ixs.toSet.subsets(2).toList ::: ixs.toSet.subsets(3).toList)))
+  val kvSubsets = mapSubsets(ixRowMajor) ++ mapSubsets(ixColMajor) ++ mapSubsets(ixBlockMajor)
+
   // Set start time.
   val startTime =  System.currentTimeMillis()
 
@@ -86,9 +90,7 @@ object SolveSerialArrayApp extends App {
 	var searchQueue = List(initCands)
 
 	var currCands = initCands
-	var numCandsCurr = 0
-	var numCandsPrev = 0
-	var validPuzzle = true;
+	var numCandsCurr = 0; var numCandsPrev = 0; var validPuzzle = true; var first = true
 	// Loop until solved or search queue empty.
 	do {
 	  // Pop array of candidates from the queue.
@@ -110,15 +112,18 @@ object SolveSerialArrayApp extends App {
       scrubBlockConstraints(currCands)
       // Scrub open tuples.
       scrubCandidates(scrubOpenTuples(currCands, _))
-      // Scrub hidden tuples.
-      scrubCandidates(scrubHiddenTuples(currCands, _))
+      // Scrub hidden tuples, need only be done once per puzzle.
+      if (first) { first = false
+        scrubCandidates(scrubHiddenTuples(currCands, _))
+      }
 
       // Check puzzle validity & count remaining candidates.
       validPuzzle = isValidCands(currCands)
 	    numCandsCurr = currCands.foldLeft(0)((l,xxs) => l + xxs.foldLeft(0)((m,xs) => m + xs.length))
     } while (validPuzzle && numCandsCurr > 81 && numCandsCurr < numCandsPrev)
 	  if (validPuzzle && numCandsCurr > 81) {
-	    searchQueue = searchQueue ::: findSuccessors(currCands)
+      searchQueue = findSuccessors(currCands) ::: searchQueue    // depth-first
+//	    searchQueue = searchQueue ::: findSuccessors(currCands)    // breadth-first
 	  }
 	} while ((numCandsCurr > 81 || !validPuzzle) && searchQueue.length > 0)
 
@@ -147,7 +152,8 @@ object SolveSerialArrayApp extends App {
   }
 
   // Scrub rows, columns & blocks of candidates with input function.
-  def scrubCandidates(scrubFn : (List[(Int,Int)]) => Unit) : Unit = {  	ixRowMajor.foreach(xs => scrubFn(xs))
+  def scrubCandidates(scrubFn : (List[(Int,Int)]) => Unit) : Unit = {
+    ixRowMajor.foreach(xs => scrubFn(xs))
   	ixColMajor.foreach(xs => scrubFn(xs))
   	ixBlockMajor.foreach(xs => scrubFn(xs))
   }
@@ -175,10 +181,9 @@ object SolveSerialArrayApp extends App {
     })
   }
 
-  // Scrub all block constraints from all rows.
+  // Scrub candidates unique to a block's row/column from that row/column external to block.
   def scrubBlockConstraints(cands : Array[Array[List[Int]]]) : Unit = {
     // Scrub set of three rows with constraints from input block.
-    // Upgrade, don't scrub singles within blocks.
   	ixBlockMajor.foreach(blockCells => {
   	  // Build index of block row & column cells.
   	  val blockRows = Array.ofDim[List[(Int,Int)]](3)
@@ -238,20 +243,14 @@ object SolveSerialArrayApp extends App {
 
   // Finds & removes hidden tuple values from input "row." Hidden tuples are a set of candidates S s.t. instances exist in exactly |s| cells.
   def scrubHiddenTuples(cands : Array[Array[List[Int]]], ixs : List[(Int,Int)]) : Unit = {
-    // Count the number of times each candidate value appears into map (val -> count).
-    val candCounts = ixs.foldLeft(Map[Int, Int]())((kvs : Map[Int, Int], cell : (Int,Int)) => cell match {case (y,x) =>
-      cands(y)(x).foldLeft(kvs)((result : Map[Int, Int], c : Int) => result.get(c) match {
-        case None => kvs + (c -> 1)
-        case Some(count) => kvs + (c -> (count + 1))
-      })})
-
-    // Function determines whether a set of cells contains unknown cells (i.e., multiple candidates).
+    // Function determines whether a set of cells contains all unknown cells (i.e., multiple candidates).
     val multiCands = (xs : Set[(Int,Int)]) => xs.foldLeft(true)((b, cell) => cell match {case (y,x) =>
       b && cands(y)(x).length > 1
     })
 
-    // Build row's cell powerset, 2 <= length <= 4.
-    val ixSubsets = ixs.toSet.subsets.filter(xs => xs.size > 1 && xs.size < 5 && multiCands(xs)).map(xs => xs.toSet).toList
+    // Lookup row's tuple subsets from cache and filter out those with at least one known cell.
+    val ixSubsets = kvSubsets(ixs).filter(multiCands)
+
     // Process of subsets in powerset.
     ixSubsets.foreach(sx => {
       // Collect candidate values from outside of subset cells.
