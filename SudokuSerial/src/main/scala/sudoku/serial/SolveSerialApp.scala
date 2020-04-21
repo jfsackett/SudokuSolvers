@@ -6,9 +6,14 @@ import java.util.Date
 /**
  * This program solves Sudoku puzzles.
  * Requires filename as command line parameter.
+ * Usage:
+ * sudoku.serial.SolveSerialApp [-q] <puzzles filename>
+ * flag: -q : quiet mode (don't print puzzles)
+ *
  * File contains one or more puzzles; one puzzle per line.
  * Puzzle line format:
  * 67.1...9..5..7...4....9.5.7..1.32....48...35....65.2..1.4.6....3...2..6..9...1.23
+ * such that digits known and dots are unknown.
  *
  * @author Joseph Sackett
  */
@@ -29,12 +34,13 @@ object SolveSerialApp extends App {
   // Build cache holding powerset row cell indexes, 2 <= length <= 3.
   val ixSubsets = (0 to 8).toSet.subsets.filter(xs => xs.size > 1 && xs.size < 4).map(xs => xs.toSet).toList
 
-  // Set start time.
+  // Record start time.
   val startTime =  System.currentTimeMillis()
 
   // Loop through and solve each puzzle.
   puzzles.foreach((puzzleStr : String) => {
-	// Parse puzzle line into 9x9 List[List[Int]].
+
+	// Parse puzzle line into 9x9 List[List[List[Int]]] of initial candidate lists.
 	val puzzleNums = puzzleStr.foldRight(List[Int]())((ch : Char, puzzNums : List[Int]) => (if (ch == '.') 0 else ch.asDigit) :: puzzNums)
 	val puzzle = puzzleNums.grouped(9).toList
 

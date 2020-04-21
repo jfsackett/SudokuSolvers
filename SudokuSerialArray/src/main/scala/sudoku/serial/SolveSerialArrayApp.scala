@@ -2,7 +2,6 @@ package sudoku.serial
 
 import scala.io.Source
 import java.util.Date
-import scala.collection.parallel.immutable.ParSeq
 
 /**
  * This program solves Sudoku puzzles.
@@ -60,13 +59,13 @@ object SolveSerialArrayApp extends App {
   val mapSubsets = (ixss : List[List[(Int,Int)]]) => ixss.foldLeft(Map[List[(Int,Int)], List[Set[(Int,Int)]]]())((kv, ixs) => kv + (ixs -> (ixs.toSet.subsets(2).toList ::: ixs.toSet.subsets(3).toList)))
   val kvSubsets = mapSubsets(ixRowMajor) ++ mapSubsets(ixColMajor) ++ mapSubsets(ixBlockMajor)
 
-  // Set start time.
+  // Record start time.
   val startTime =  System.currentTimeMillis()
 
   // Loop through and solve each puzzle.
   puzzles.foreach((puzzleStr : String) => {
 
-	// Parse puzzle line into 9x9 Array of initial candidate lists.
+	// Parse puzzle line into 9x9 Array[Array[List[Int]]] of initial candidate lists.
   val initCands = Array.ofDim[List[Int]](9,9)
   for (ix <- 0 to 80) {
     initCands(ix / 9)(ix % 9) = if (puzzleStr.charAt(ix) == '.') List() else List(puzzleStr.charAt(ix).asDigit)
