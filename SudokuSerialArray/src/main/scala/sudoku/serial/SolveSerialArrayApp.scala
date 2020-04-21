@@ -115,7 +115,6 @@ object SolveSerialArrayApp extends App {
       if (first) { first = false
         scrubCandidates(scrubHiddenTuples(currCands, _))
       }
-
       // Check puzzle validity & count remaining candidates.
       validPuzzle = isValidCands(currCands)
 	    numCandsCurr = currCands.foldLeft(0)((l,xxs) => l + xxs.foldLeft(0)((m,xs) => m + xs.length))
@@ -131,6 +130,7 @@ object SolveSerialArrayApp extends App {
 	  if (!quiet) { println("Solution:"); currCands.map(printCandLine) }
 	}
 	else if (!quiet) println("Unsolvable Puzzle.") else print('x')
+
   }) // End puzzles.foreach() loop.
 
   // Complete & output execution timing.
@@ -246,11 +246,10 @@ object SolveSerialArrayApp extends App {
     val multiCands = (xs : Set[(Int,Int)]) => xs.foldLeft(true)((b, cell) => cell match {case (y,x) =>
       b && cands(y)(x).length > 1
     })
-
     // Lookup row's tuple subsets from cache and filter out those with at least one known cell.
     val ixSubsets = kvSubsets(ixs).filter(multiCands)
 
-    // Process of subsets in powerset.
+    // Process all subsets in powerset.
     ixSubsets.foreach(sx => {
       // Collect candidate values from outside of subset cells.
       val elimVals = ixs.foldLeft(Set[Int]())((s : Set[Int], cell : (Int,Int)) => cell match {case (y,x) =>

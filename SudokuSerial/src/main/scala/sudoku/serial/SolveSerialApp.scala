@@ -62,6 +62,7 @@ object SolveSerialApp extends App {
 	// Find intersection of the candidates in each cell.
 	val foldInter = (xss : List[List[Int]]) => xss.foldLeft((1 to 9).toList)((l1, l2) => l1.intersect(l2))
 	var puzzleCands = allCands.map(xsss => xsss.map(foldInter))
+
 	// Place the initial list of candidates in the queue.
 	var searchQueue = List(puzzleCands)
 
@@ -71,8 +72,7 @@ object SolveSerialApp extends App {
 	  // Pop a list of candidates from the queue.
 	  puzzleCands = searchQueue.head
 	  searchQueue = searchQueue.drop(1)
-
-	  // Loop until no more candidates removed, scrubbing singles and column/row block constraints each iteration.
+	  // Loop until no more candidates removed. Scrub singles, block constraints, open and hidden tuples each iteration.
 	  do {
 	    // Count initial candidates.
 	    numCandsCurr = puzzleCands.flatten.flatten.length
@@ -112,12 +112,13 @@ object SolveSerialApp extends App {
 
   }) // End puzzles.foreach()
 
+  // Complete & output execution timing.
   val totalTime = System.currentTimeMillis() - startTime
   println("\nTotal Runtime: " + totalTime + " ms")
   if (puzzles.length > 1) {
     println("Number Puzzles: " + puzzles.length)
     println("Average Runtime: " + (totalTime.toFloat / puzzles.length).formatted("%.2f") + " ms")
-    if (!quiet) println("Performance will be improved with -quiet command line switch.")
+    if (!quiet) println("Performance may be improved using quiet (-q) command line switch.")
   }
   // End main code.
 
@@ -235,17 +236,15 @@ object SolveSerialApp extends App {
     else rowCands
   }
 
-
   // Finds & removes hidden tuple values from candidate lists. Hidden tuples are a set of candidates S s.t. instances exist in exactly |s| cells.
   def scrubHiddenTuples(rowCands : List[List[Int]]) : List[List[Int]] = {
     val cands = rowCands.toArray
-
     // Function determines whether a set of cells contains all unknown cells (i.e., multiple candidates).
     val multiCands = (xs : Set[Int]) => xs.foldLeft(true)((b, ix) => b && cands(ix).length > 1)
-
+    // Filter out tuple subsets with at least one known cell.
     val ixMultiSubsets = ixSubsets.filter(multiCands)
 
-    // Process of subsets in powerset.
+    // Process all subsets in powerset.
     ixMultiSubsets.foreach(sx => {
       // Collect candidate values from outside of subset cells.
       val elimVals = (0 to 8).foldLeft(Set[Int]())((s : Set[Int], ix : Int) => if (!sx.contains(ix)) s ++ cands(ix) else s).toSeq
@@ -299,5 +298,4 @@ object SolveSerialApp extends App {
           (preRows ::: (preCells ::: List(cand) :: postCells) :: postRows) :: result)
     }
   }
-
 }
