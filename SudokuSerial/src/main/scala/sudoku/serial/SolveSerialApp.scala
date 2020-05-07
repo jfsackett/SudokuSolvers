@@ -19,7 +19,7 @@ import java.util.Date
  */
 object SolveSerialApp extends App {
   if (args.length < 1 || args.length > 2) {
-	  println("Usage:\nsudoku.serial.SolveSerialApp [-q] <puzzles filename>\nflag: -q : quiet mode (don't print puzzles)")
+    println("Usage:\nsudoku.serial.SolveSerialApp [-q] <puzzles filename>\nflag: -q : quiet mode (don't print puzzles)")
     System.exit(1)
   }
 
@@ -40,55 +40,55 @@ object SolveSerialApp extends App {
   // Loop through and solve each puzzle.
   puzzles.foreach((puzzleStr : String) => {
 
-	// Parse puzzle line into 9x9 List[List[List[Int]]] of initial candidate lists.
-	val puzzleNums = puzzleStr.foldRight(List[Int]())((ch : Char, puzzNums : List[Int]) => (if (ch == '.') 0 else ch.asDigit) :: puzzNums)
-	val puzzle = puzzleNums.grouped(9).toList
+  // Parse puzzle line into 9x9 List[List[List[Int]]] of initial candidate lists.
+  val puzzleNums = puzzleStr.foldRight(List[Int]())((ch : Char, puzzNums : List[Int]) => (if (ch == '.') 0 else ch.asDigit) :: puzzNums)
+  val puzzle = puzzleNums.grouped(9).toList
 
-	// Printing Utilities
-	val printPuzLine = (xs : List[Int]) => {xs.foreach(x => print(x + "  ")); println}
-	val printCandLine = (xss : List[List[Int]]) => {xss.foreach({xs => xs.map(x => print(x)); print("  ")}); println}
-	// Output puzzle.
-	if (!quiet) {
-	  println("Puzzle:")
-	  puzzle.map(printPuzLine)
-	}
+  // Printing Utilities
+  val printPuzLine = (xs : List[Int]) => {xs.foreach(x => print(x + "  ")); println}
+  val printCandLine = (xss : List[List[Int]]) => {xss.foreach({xs => xs.map(x => print(x)); print("  ")}); println}
+  // Output puzzle.
+  if (!quiet) {
+    println("Puzzle:")
+    puzzle.map(printPuzLine)
+  }
 
-	// Find row, column & block candidates.
-	val rowCands = puzzle.map(findCands)
-	val colCands = puzzle.transpose.map(findCands).transpose
-	val blocksCands = transBlocks(transBlocks(puzzle).map(findCands))
-	// Combine all candidates and group them by cell.
-	val allCands = List(rowCands, colCands, blocksCands).transpose.map(xs => xs.transpose)
-	// Find intersection of the candidates in each cell.
-	val foldInter = (xss : List[List[Int]]) => xss.foldLeft((1 to 9).toList)((l1, l2) => l1.intersect(l2))
-	var puzzleCands = allCands.map(xsss => xsss.map(foldInter))
+  // Find row, column & block candidates.
+  val rowCands = puzzle.map(findCands)
+  val colCands = puzzle.transpose.map(findCands).transpose
+  val blocksCands = transBlocks(transBlocks(puzzle).map(findCands))
+  // Combine all candidates and group them by cell.
+  val allCands = List(rowCands, colCands, blocksCands).transpose.map(xs => xs.transpose)
+  // Find intersection of the candidates in each cell.
+  val foldInter = (xss : List[List[Int]]) => xss.foldLeft((1 to 9).toList)((l1, l2) => l1.intersect(l2))
+  var puzzleCands = allCands.map(xsss => xsss.map(foldInter))
 
-	// Place the initial list of candidates in the queue.
-	var searchQueue = List(puzzleCands)
+  // Place the initial list of candidates in the queue.
+  var searchQueue = List(puzzleCands)
 
-	var numCandsCurr = 0; var numCandsPrev = 0; var validPuzzle = true; var first = true
-	// Loop until solved or search queue empty.
-	do {
-	  // Pop a list of candidates from the queue.
-	  puzzleCands = searchQueue.head
-	  searchQueue = searchQueue.drop(1)
-	  // Loop until no more candidates removed. Scrub singles, block constraints, open and hidden tuples each iteration.
-	  do {
-	    // Count initial candidates.
-	    numCandsCurr = puzzleCands.flatten.flatten.length
-	    // Loop until no more candidates removed, scrubbing singles each iteration.
-	    do {
-	      numCandsPrev = numCandsCurr
-	      // Scrub singles and uniques from rows, columns & blocks.
-	      puzzleCands = scrubCandidates(puzzleCands, scrubSingles)
-	      // Count remaining candidates.
-	      numCandsCurr = puzzleCands.flatten.flatten.length
-	    } while (numCandsCurr > 81 && numCandsCurr < numCandsPrev)
-	    // Scrub block constraints from rows & columns.
+  var numCandsCurr = 0; var numCandsPrev = 0; var validPuzzle = true; var first = true
+  // Loop until solved or search queue empty.
+  do {
+    // Pop a list of candidates from the queue.
+    puzzleCands = searchQueue.head
+    searchQueue = searchQueue.drop(1)
+    // Loop until no more candidates removed. Scrub singles, block constraints, open and hidden tuples each iteration.
+    do {
+      // Count initial candidates.
+      numCandsCurr = puzzleCands.flatten.flatten.length
+      // Loop until no more candidates removed, scrubbing singles each iteration.
+      do {
+        numCandsPrev = numCandsCurr
+        // Scrub singles and uniques from rows, columns & blocks.
+        puzzleCands = scrubCandidates(puzzleCands, scrubSingles)
+        // Count remaining candidates.
+        numCandsCurr = puzzleCands.flatten.flatten.length
+      } while (numCandsCurr > 81 && numCandsCurr < numCandsPrev)
+      // Scrub block constraints from rows & columns.
       puzzleCands = scrubBlockConstraints(puzzleCands)
       // Scrub open tuples.
       puzzleCands = scrubCandidates(puzzleCands, scrubOpenTuples)
-	    // Count remaining candidates.
+      // Count remaining candidates.
       numCandsCurr = puzzleCands.flatten.flatten.length
       // Scrub hidden tuples, need only be done once per puzzle.
       if (first) { first = false
@@ -98,17 +98,17 @@ object SolveSerialApp extends App {
       validPuzzle = isValidCands(puzzleCands)
       numCandsCurr = puzzleCands.flatten.flatten.length
     } while (validPuzzle && numCandsCurr > 81 && numCandsCurr < numCandsPrev)
-	  if (validPuzzle && numCandsCurr > 81) {
+    if (validPuzzle && numCandsCurr > 81) {
       searchQueue = findSuccessors(puzzleCands) ::: searchQueue    // depth-first
-//	    searchQueue = searchQueue ::: findSuccessors(puzzleCands)    // breadth-first
-	  }
-	} while ((numCandsCurr > 81 || !validPuzzle) && searchQueue.length > 0)
+      //searchQueue = searchQueue ::: findSuccessors(puzzleCands)    // breadth-first
+    }
+  } while ((numCandsCurr > 81 || !validPuzzle) && searchQueue.length > 0)
 
-	// Puzzle solved when 9 * 9 = 81 candidates remain.
-	if (numCandsCurr == 81 && validPuzzle) {
-	  if (!quiet) { println("Solution:"); puzzleCands.map(printCandLine) }
-	}
-	else if (!quiet) println("Unsolvable Puzzle.") else print('x')
+  // Puzzle solved when 9 * 9 = 81 candidates remain.
+  if (numCandsCurr == 81 && validPuzzle) {
+    if (!quiet) { println("Solution:"); puzzleCands.map(printCandLine) }
+  }
+  else if (!quiet) println("Unsolvable Puzzle.") else print('x')
 
   }) // End puzzles.foreach()
 
@@ -132,10 +132,10 @@ object SolveSerialApp extends App {
   // Transform each of the 9 blocks into list.
   def transBlocks[A](xss : List[List[A]]) : List[List[A]] = {
     // Regroup into list of three rows each & collect into blocks.
-  	xss.flatten.grouped(27).foldRight(List[List[A]]())((xs : List[A], result) => {
-  	  val blocks = divTri(xs, (xs : List[A]) => (xs.length - 1) % 9 / 3)
-  	  blocks._1 :: blocks._2 :: blocks._3 :: result
-  	})
+    xss.flatten.grouped(27).foldRight(List[List[A]]())((xs : List[A], result) => {
+      val blocks = divTri(xs, (xs : List[A]) => (xs.length - 1) % 9 / 3)
+      blocks._1 :: blocks._2 :: blocks._3 :: result
+    })
   }
 
   // Divides a list into tuple of 3 lists, based on input function.
@@ -155,8 +155,8 @@ object SolveSerialApp extends App {
   def scrubCandidates(puzzleCandsIn : List[List[List[Int]]], scrubFn : List[List[Int]] => List[List[Int]]) : List[List[List[Int]]] = {
     var puzzleCands = puzzleCandsIn
     puzzleCands = puzzleCands.map(scrubFn)
-  	puzzleCands = puzzleCands.transpose.map(scrubFn).transpose
-  	transBlocks(transBlocks(puzzleCands).map(scrubFn))
+    puzzleCands = puzzleCands.transpose.map(scrubFn).transpose
+    transBlocks(transBlocks(puzzleCands).map(scrubFn))
   }
 
   // Remove single & unique candidates from a row.
@@ -173,7 +173,7 @@ object SolveSerialApp extends App {
     val uniques = mulTuple._2.distinct.diff(mulTuple._1).diff(singles)
     // Remove singles & uniques from candidates.
     rowCands.map(xs => if (xs.length == 1) xs else xs.diff(singles))
-    	.map(xs => if (xs.intersect(uniques) != Nil) xs.intersect(uniques) else xs)
+      .map(xs => if (xs.intersect(uniques) != Nil) xs.intersect(uniques) else xs)
   }
 
   // Scrub candidates unique to a block's row/column from that row/column external to block.
