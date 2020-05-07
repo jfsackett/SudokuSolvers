@@ -2,13 +2,16 @@
 ### Serial Solver
 ### Author: Joseph Sackett
 
-Instructions for building and executing serial Sudoku solver.
+#### Installation Requirements
+Running the program requires only Java 11+ and a single command.  
 
-1. Install latest JDK
-2. Download and install Gradle Build Tool from gradle.org
-3. Unzip this project
-4. Open command prompt and navigate to project root
-5. Use Gradle to compile & run program  
+#### Execution Instructions
+1. Install latest Java JDK from Oracle
+2. Clone or download this project from: [jfsackett/SudokuSolvers](https://github.com/jfsackett/SudokuSolvers)
+3. Open command prompt and navigate to project root: **&lt;install-path&gt;/SudokuSolvers/SudokuSerial**
+4. Use Gradle to compile & run program  
    Execute at command prompt:  
-	> gradle run --args='input/puzzle1.txt'
-6. Try different puzzles by changing the puzzle input txt file (see input subdirectory)
+   $ gradle run --args='input/puzzle1.txt'
+5. Try different puzzles by changing the puzzle input txt file (see input subdirectory)
+
+#### Development Instructions
