@@ -9,8 +9,7 @@ Solving Sudoku puzzles requires Java 11+ and only a single command.
 1. Install latest Java JDK from Oracle
 2. Clone or download this repository from: [jfsackett/SudokuSolvers](https://github.com/jfsackett/SudokuSolvers)
 3. Open shell and change to Serial Solver project root: **&lt;install-path&gt;/SudokuSolvers/SudokuSerial**
-4. Use Gradle Wrapper to compile & run program  
-   Execute shell command:  
+4. Use Gradle Wrapper to compile & run program by executing shell command:  
    `$ gradlew run --args="input/puzzle1.txt"`
 5. Try different puzzles by changing the puzzle input txt file (browse input subdirectory)  
    Note that solving multi-puzzle files produces a great deal of output: suppress this with the -q command line option  
