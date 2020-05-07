@@ -17,7 +17,7 @@ Solving Sudoku puzzles requires Java 11+ and only a single command.
 6. Solver will output puzzle solution(s) in regular mode, else *Unsolvable Puzzle.*  
 7. Solver will not produce output in quiet mode, except an *x* for unsolvable puzzles
 
-#### Development Instructions
+#### Developer Instructions
 1. Minimally requires Java 11+ and Gradle  
 2. Gradle JavaExec does not need wrapper: above commands same except use gradle (not gradlew) 
 3. Could optionally be built and executed via IDE with Scala knowledge.
