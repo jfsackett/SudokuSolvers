@@ -28,4 +28,4 @@ Requires Java 11+ and only a single command. Works on any OS.
 If you would like to solve your own custom puzzles,  
 place each puzzle on its own file line with the format:  
 67.1...9..5..7...4....9.5.7..1.32....48...35....65.2..1.4.6....3...2..6..9...1.23  
-containing 81 digits or dots (such that digits are known and dots are unknown).
+containing 81 digits or dots in matrix row major order (such that digits are known and dots are unknown).
