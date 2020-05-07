@@ -3,7 +3,7 @@
 ### Author: Joseph Sackett
 
 #### Installation Requirements
-Solving Sudoku puzzles requires Java 11+ and only a single command.  
+Requires Java 11+ and only a single command. Works on any OS. 
 
 #### Execution Instructions
 1. Install latest Java JDK from Oracle
