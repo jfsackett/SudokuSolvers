@@ -1,5 +1,5 @@
 # Scala Sudoku
-### Serial Solver
+### Serial Solver using Nested Lists for Candidates 
 ### Author: Joseph Sackett
 
 #### Installation Requirements
@@ -22,7 +22,7 @@ Requires Java 11+ and only a single command. Works on any OS.
 1. Minimally requires Java 11+ and Gradle  
 2. Gradle JavaExec does not need wrapper: above commands same except use gradle (not gradlew) 
 3. Could optionally be built and executed via IDE with Scala knowledge.
-4. Single source code file: **&lt;project-root&gt;/src/main/sudoku/serial/SolveSerialApp.scala**
+4. Single source code file: **&lt;project-root&gt;/src/main/scala/sudoku/serial/SolveSerialApp.scala**
 
 #### Custom Puzzles
 If you would like to solve your own custom puzzles,  
