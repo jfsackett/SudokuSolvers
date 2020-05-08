@@ -1,5 +1,5 @@
 # Scala Sudoku
-### Serial Solver using Nested Lists for Candidates 
+### Serial Solver using Nested Lists for Candidate Values 
 ### Author: Joseph Sackett
 
 #### Installation Requirements

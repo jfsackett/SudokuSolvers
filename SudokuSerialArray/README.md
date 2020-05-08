@@ -1,5 +1,5 @@
 # Scala Sudoku
-### Serial Solver using Array for Candidates
+### Serial Solver using Array for Candidate Values
 ### Author: Joseph Sackett
 
 #### Installation Requirements
