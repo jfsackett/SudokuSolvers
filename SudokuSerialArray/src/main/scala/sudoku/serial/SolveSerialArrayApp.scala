@@ -19,7 +19,7 @@ import java.util.Date
  */
 object SolveSerialArrayApp extends App {
   if (args.length < 1 || args.length > 2) {
-	  println("Usage:\nsudoku.serial.SolveSerialArrayApp [-q] <puzzles filename>\nflag: -q : quiet mode (don't print puzzles)")
+    println("Usage:\nsudoku.serial.SolveSerialArrayApp [-q] <puzzles filename>\nflag: -q : quiet mode (don't print puzzles)")
     System.exit(1)
   }
 
@@ -31,7 +31,7 @@ object SolveSerialArrayApp extends App {
   // Quiet flag indicates whether puzzles are printed.
   val quiet = args.length > 1 && args(0).startsWith("-q")
 
-	// Build row major index into candidate array cells.
+  // Build row major index into candidate array cells.
   val ixRowMajor = (0 to 8).foldRight(List[List[(Int,Int)]]())((y, xxs) => (0 to 8).foldRight(List[(Int,Int)]())((x, xs) => (y,x) :: xs) :: xxs)
 
   // Build column major index into candidate array cells.
@@ -65,49 +65,49 @@ object SolveSerialArrayApp extends App {
   // Loop through and solve each puzzle.
   puzzles.foreach((puzzleStr : String) => {
 
-	// Parse puzzle line into 9x9 Array[Array[List[Int]]] of initial candidate lists.
+  // Parse puzzle line into 9x9 Array[Array[List[Int]]] of initial candidate lists.
   val initCands = Array.ofDim[List[Int]](9,9)
   for (ix <- 0 to 80) {
     initCands(ix / 9)(ix % 9) = if (puzzleStr.charAt(ix) == '.') List() else List(puzzleStr.charAt(ix).asDigit)
   }
 
-	// Printing utility function.
-	val printCandLine = (xss : Array[List[Int]]) => {xss.foreach({xs => if (xs.length == 0) print("0") else xs.map(x => print(x)); print("  ")}); println}
-	// Output puzzle.
-	if (!quiet) {
-	  println("Puzzle:")
-	  initCands.map(printCandLine)
-  	println()
-	}
+  // Printing utility function.
+  val printCandLine = (xss : Array[List[Int]]) => {xss.foreach({xs => if (xs.length == 0) print("0") else xs.map(x => print(x)); print("  ")}); println}
+  // Output puzzle.
+  if (!quiet) {
+    println("Puzzle:")
+    initCands.map(printCandLine)
+    println()
+  }
 
-	// Find initial candidates. Intersect row, column & block candidates, updating array.
-	ixRowMajor.foreach(findCands(initCands, _))
-	ixColMajor.foreach(findCands(initCands, _))
-	ixBlockMajor.foreach(findCands(initCands, _))
+  // Find initial candidates. Intersect row, column & block candidates, updating array.
+  ixRowMajor.foreach(findCands(initCands, _))
+  ixColMajor.foreach(findCands(initCands, _))
+  ixBlockMajor.foreach(findCands(initCands, _))
 
-	// Place initial array of candidates in the queue.
-	var searchQueue = List(initCands)
+  // Place initial array of candidates in the queue.
+  var searchQueue = List(initCands)
 
-	var currCands = initCands
-	var numCandsCurr = 0; var numCandsPrev = 0; var validPuzzle = true; var first = true
-	// Loop until solved or search queue empty.
-	do {
-	  // Pop array of candidates from the queue.
-	  currCands = searchQueue.head
-	  searchQueue = searchQueue.drop(1)
-	  // Loop until no more candidates removed. Scrub singles, block constraints, open and hidden tuples each iteration.
-	  do {
-	    // Count initial candidates.
-	    numCandsCurr = currCands.foldLeft(0)((s,xxs) => s + xxs.foldLeft(0)((t,xs) => t + xs.length))
-	    // Loop until no more candidates removed, scrubbing singles & uniques each iteration.
-	    do {
-	      numCandsPrev = numCandsCurr
-	      // Scrub singles and uniques from rows, columns & blocks.
-	      scrubCandidates(scrubSingles(currCands, _))
-	      // Count remaining candidates.
-	      numCandsCurr = currCands.foldLeft(0)((l,xxs) => l + xxs.foldLeft(0)((m,xs) => m + xs.length))
-	    } while (numCandsCurr > 81 && numCandsCurr < numCandsPrev)
-	    // Scrub block constraints from rows & columns.
+  var currCands = initCands
+  var numCandsCurr = 0; var numCandsPrev = 0; var validPuzzle = true; var first = true
+  // Loop until solved or search queue empty.
+  do {
+    // Pop array of candidates from the queue.
+    currCands = searchQueue.head
+    searchQueue = searchQueue.drop(1)
+    // Loop until no more candidates removed. Scrub singles, block constraints, open and hidden tuples each iteration.
+    do {
+      // Count initial candidates.
+      numCandsCurr = currCands.foldLeft(0)((s,xxs) => s + xxs.foldLeft(0)((t,xs) => t + xs.length))
+      // Loop until no more candidates removed, scrubbing singles & uniques each iteration.
+      do {
+        numCandsPrev = numCandsCurr
+        // Scrub singles and uniques from rows, columns & blocks.
+        scrubCandidates(scrubSingles(currCands, _))
+        // Count remaining candidates.
+        numCandsCurr = currCands.foldLeft(0)((l,xxs) => l + xxs.foldLeft(0)((m,xs) => m + xs.length))
+      } while (numCandsCurr > 81 && numCandsCurr < numCandsPrev)
+      // Scrub block constraints from rows & columns.
       scrubBlockConstraints(currCands)
       // Scrub open tuples.
       scrubCandidates(scrubOpenTuples(currCands, _))
@@ -117,19 +117,19 @@ object SolveSerialArrayApp extends App {
       }
       // Check puzzle validity & count remaining candidates.
       validPuzzle = isValidCands(currCands)
-	    numCandsCurr = currCands.foldLeft(0)((l,xxs) => l + xxs.foldLeft(0)((m,xs) => m + xs.length))
+      numCandsCurr = currCands.foldLeft(0)((l,xxs) => l + xxs.foldLeft(0)((m,xs) => m + xs.length))
     } while (validPuzzle && numCandsCurr > 81 && numCandsCurr < numCandsPrev)
-	  if (validPuzzle && numCandsCurr > 81) {
+    if (validPuzzle && numCandsCurr > 81) {
       searchQueue = findSuccessors(currCands) ::: searchQueue    // depth-first
-//	    searchQueue = searchQueue ::: findSuccessors(currCands)    // breadth-first
-	  }
-	} while ((numCandsCurr > 81 || !validPuzzle) && searchQueue.length > 0)
+//      searchQueue = searchQueue ::: findSuccessors(currCands)    // breadth-first
+    }
+  } while ((numCandsCurr > 81 || !validPuzzle) && searchQueue.length > 0)
 
-	// Puzzle solved when 9 * 9 = 81 candidates remain.
-	if (numCandsCurr == 81 && validPuzzle) {
-	  if (!quiet) { println("Solution:"); currCands.map(printCandLine) }
-	}
-	else if (!quiet) println("Unsolvable Puzzle.") else print('x')
+  // Puzzle solved when 9 * 9 = 81 candidates remain.
+  if (numCandsCurr == 81 && validPuzzle) {
+    if (!quiet) { println("Solution:"); currCands.map(printCandLine) }
+  }
+  else if (!quiet) println("Unsolvable Puzzle.") else print('x')
 
   }) // End puzzles.foreach() loop.
 
@@ -153,8 +153,8 @@ object SolveSerialArrayApp extends App {
   // Scrub rows, columns & blocks of candidates with input function.
   def scrubCandidates(scrubFn : (List[(Int,Int)]) => Unit) : Unit = {
     ixRowMajor.foreach(xs => scrubFn(xs))
-  	ixColMajor.foreach(xs => scrubFn(xs))
-  	ixBlockMajor.foreach(xs => scrubFn(xs))
+    ixColMajor.foreach(xs => scrubFn(xs))
+    ixBlockMajor.foreach(xs => scrubFn(xs))
   }
 
   // Remove single & unique candidates from input "row." Row's cells indexed using ixs (list of cell coords) into cands vector.
@@ -183,44 +183,44 @@ object SolveSerialArrayApp extends App {
   // Scrub candidates unique to a block's row/column from that row/column external to block.
   def scrubBlockConstraints(cands : Array[Array[List[Int]]]) : Unit = {
     // Scrub set of three rows with constraints from input block.
-  	ixBlockMajor.foreach(blockCells => {
-  	  // Build index of block row & column cells.
-  	  val blockRows = Array.ofDim[List[(Int,Int)]](3)
-  	  val blockCols = Array.ofDim[List[(Int,Int)]](3)
-  	  var ix = 0
-   	  blockCells.foreach(cell => {
-   	    val blockRow = ix / 3
-   	    blockRows(blockRow) = if (blockRows(blockRow) == null) List(cell) else cell :: blockRows(blockRow)
-   	    val blockCol = ix % 3
-   	    blockCols(blockCol) = if (blockCols(blockCol) == null) List(cell) else cell :: blockCols(blockCol)
-   	    ix += 1
-   	  })
-   	  // Collect row & column candidate values.
-  	  val blockRowCands = Array.ofDim[List[Int]](3)
-  	  val blockColCands = Array.ofDim[List[Int]](3)
- 	    for (ix <- 0 to 2) {
-   	    blockRowCands(ix) = blockRows(ix).foldLeft(List[Int]())((xs, cell) => cell match {case (y,x) => cands(y)(x) ::: xs}).distinct
-   	    blockColCands(ix) = blockCols(ix).foldLeft(List[Int]())((xs, cell) => cell match {case (y,x) => cands(y)(x) ::: xs}).distinct
-   	  }
-   	  // Find each row & column's unique candidate values, by subtracting other rows' values.
-  	  val blockRowUnique = Array.ofDim[List[Int]](3)
-  	  val blockColUnique = Array.ofDim[List[Int]](3)
- 	    for (ix <- 0 to 2) {
-  	    blockRowUnique(ix) = blockRowCands(ix).diff(blockRowCands((ix+1)%3)).diff(blockRowCands((ix+2)%3))
-  	    blockColUnique(ix) = blockColCands(ix).diff(blockColCands((ix+1)%3)).diff(blockColCands((ix+2)%3))
- 	    }
-  	  // Remove candidates unique to a block's row/column from that row/column external to block.
- 	    for (ix <- 0 to 2) {
-   	    if (blockRowUnique(ix).length > 0) {
-   	      val y = blockRows(ix).head._1
-   	      for (x <- 0 to 8) cands(y)(x) = if (!blockRows(ix).contains((y,x))) cands(y)(x).diff(blockRowUnique(ix)) else cands(y)(x)
-   	    }
-   	    if (blockColUnique(ix).length > 0) {
-   	      val x = blockCols(ix).head._2
-   	      for (y <- 0 to 8) cands(y)(x) = if (!blockCols(ix).contains((y,x))) cands(y)(x).diff(blockColUnique(ix)) else cands(y)(x)
-   	    }
-   	  }
-  	})
+    ixBlockMajor.foreach(blockCells => {
+      // Build index of block row & column cells.
+      val blockRows = Array.ofDim[List[(Int,Int)]](3)
+      val blockCols = Array.ofDim[List[(Int,Int)]](3)
+      var ix = 0
+       blockCells.foreach(cell => {
+         val blockRow = ix / 3
+         blockRows(blockRow) = if (blockRows(blockRow) == null) List(cell) else cell :: blockRows(blockRow)
+         val blockCol = ix % 3
+         blockCols(blockCol) = if (blockCols(blockCol) == null) List(cell) else cell :: blockCols(blockCol)
+         ix += 1
+       })
+       // Collect row & column candidate values.
+      val blockRowCands = Array.ofDim[List[Int]](3)
+      val blockColCands = Array.ofDim[List[Int]](3)
+       for (ix <- 0 to 2) {
+         blockRowCands(ix) = blockRows(ix).foldLeft(List[Int]())((xs, cell) => cell match {case (y,x) => cands(y)(x) ::: xs}).distinct
+         blockColCands(ix) = blockCols(ix).foldLeft(List[Int]())((xs, cell) => cell match {case (y,x) => cands(y)(x) ::: xs}).distinct
+       }
+       // Find each row & column's unique candidate values, by subtracting other rows' values.
+      val blockRowUnique = Array.ofDim[List[Int]](3)
+      val blockColUnique = Array.ofDim[List[Int]](3)
+       for (ix <- 0 to 2) {
+        blockRowUnique(ix) = blockRowCands(ix).diff(blockRowCands((ix+1)%3)).diff(blockRowCands((ix+2)%3))
+        blockColUnique(ix) = blockColCands(ix).diff(blockColCands((ix+1)%3)).diff(blockColCands((ix+2)%3))
+       }
+      // Remove candidates unique to a block's row/column from that row/column external to block.
+       for (ix <- 0 to 2) {
+         if (blockRowUnique(ix).length > 0) {
+           val y = blockRows(ix).head._1
+           for (x <- 0 to 8) cands(y)(x) = if (!blockRows(ix).contains((y,x))) cands(y)(x).diff(blockRowUnique(ix)) else cands(y)(x)
+         }
+         if (blockColUnique(ix).length > 0) {
+           val x = blockCols(ix).head._2
+           for (y <- 0 to 8) cands(y)(x) = if (!blockCols(ix).contains((y,x))) cands(y)(x).diff(blockColUnique(ix)) else cands(y)(x)
+         }
+       }
+    })
   }
 
   // Finds & removes open tuple values from input "row", indexed using ixs. Open tuples where length == count in row.
@@ -301,7 +301,7 @@ object SolveSerialArrayApp extends App {
       }))
 
     // If shortest candidate list found, return list of cloned candidate arrays, each with a single candidate from list.
-	  if (len < Integer.MAX_VALUE) {
+    if (len < Integer.MAX_VALUE) {
       val (y,x) = cell
       cands(y)(x).foldLeft(List[Array[Array[List[Int]]]]())((xsss, c) => {val newCands = cloneCands(cands); newCands(y)(x) = List(c); newCands :: xsss})
     }
