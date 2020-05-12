@@ -10,11 +10,11 @@ Requires Java 11+ and only a single command. Works on any OS.
 2. Clone or download this repository: [jfsackett/SudokuSolvers](https://github.com/jfsackett/SudokuSolvers)
 3. Open shell and change to Serial Solver project root: **&lt;install-path&gt;/SudokuSolvers/SudokuSerial**
 4. Use Gradle Wrapper to compile & run program by executing shell command:  
-   `$ gradlew run --args="input/puzzle1.txt"`
+   `$ ./gradlew run --args="input/puzzle1.txt"`
 5. Try different puzzles by changing the puzzle input txt file (browse input subdirectory)  
    Note that solving multi-puzzle files produces a great deal of output,  
    suppress this with the -q "quiet" command line option:  
-   `$ gradlew run --args="-q input/top95.txt"`
+   `$ ./gradlew run --args="-q input/top95.txt"`
 6. Solver will output puzzle solution(s) in regular mode, else *Unsolvable Puzzle.*  
 7. Solver will not produce output in quiet mode, except an *x* for unsolvable puzzles
 
