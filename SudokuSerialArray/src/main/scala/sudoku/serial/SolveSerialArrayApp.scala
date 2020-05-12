@@ -98,7 +98,7 @@ object SolveSerialArrayApp extends App {
     // Loop until no more candidates removed. Scrub singles, block constraints, open and hidden tuples each iteration.
     do {
       // Count initial candidates.
-      numCandsCurr = currCands.foldLeft(0)((s,xxs) => s + xxs.foldLeft(0)((t,xs) => t + xs.length))
+      numCandsCurr = currCands.foldLeft(0)((l,xxs) => l + xxs.foldLeft(0)((m,xs) => m + xs.length))
       // Loop until no more candidates removed, scrubbing singles & uniques each iteration.
       do {
         numCandsPrev = numCandsCurr
