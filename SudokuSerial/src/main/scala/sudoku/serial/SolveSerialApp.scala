@@ -40,7 +40,7 @@ object SolveSerialApp extends App {
   // Loop through and solve each puzzle.
   puzzles.foreach((puzzleStr : String) => {
 
-  // Parse puzzle line into 9x9 List[List[List[Int]]] of initial candidate lists.
+  // Parse puzzle line into List[List[List[Int]]] of initial candidate lists.
   val puzzleNums = puzzleStr.foldRight(List[Int]())((ch : Char, puzzNums : List[Int]) => (if (ch == '.') 0 else ch.asDigit) :: puzzNums)
   val puzzle = puzzleNums.grouped(9).toList
 
@@ -129,9 +129,9 @@ object SolveSerialApp extends App {
     row.map(x => if (x == 0) cands else List(x))
   }
 
-  // Transform each of the 9 blocks into list.
+  // Transform each of the 9 blocks into major axis of candidates lists.
   def transBlocks[A](xss : List[List[A]]) : List[List[A]] = {
-    // Regroup into list of three rows each & collect into blocks.
+    // Regroup into list of three rows each & collect common block cells.
     xss.flatten.grouped(27).foldRight(List[List[A]]())((xs : List[A], result) => {
       val blocks = divTri(xs, (xs : List[A]) => (xs.length - 1) % 9 / 3)
       blocks._1 :: blocks._2 :: blocks._3 :: result
