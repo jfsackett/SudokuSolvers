@@ -124,7 +124,7 @@ object SolveSerialApp extends App {
 
   // Find the remaining candidate values from a row's knowns; return list of candidates in each unknown cell.
   def findCands(row : List[Int]) : List[List[Int]] = {
-    val knowns = row.filter(x => x > 0)
+    val knowns = row.filter(_ > 0)
     val cands = (1 to 9).toList.diff(knowns)
     row.map(x => if (x == 0) cands else List(x))
   }
