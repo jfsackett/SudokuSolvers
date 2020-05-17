@@ -40,8 +40,8 @@ object SolveSerialApp extends App {
   // Loop through and solve each puzzle.
   puzzles.foreach((puzzleStr : String) => {
 
-  // Parse puzzle line into List[List[List[Int]]] of initial candidate lists.
-  val puzzleNums = puzzleStr.foldRight(List[Int]())((ch : Char, puzzNums : List[Int]) => (if (ch == '.') 0 else ch.asDigit) :: puzzNums)
+  // Parse puzzle line into block-major nested list of initial values or zero for unknowns.
+  val puzzleNums = puzzleStr.map((ch : Char) => if (ch == '.') 0 else ch.asDigit).toList
   val puzzle = puzzleNums.grouped(9).toList
 
   // Printing Utilities
@@ -53,7 +53,7 @@ object SolveSerialApp extends App {
     puzzle.map(printPuzLine)
   }
 
-  // Find row, column & block candidates.
+  // Find row, column & block initial candidate lists.
   val rowCands = puzzle.map(findCands)
   val colCands = puzzle.transpose.map(findCands).transpose
   val blocksCands = transBlocks(transBlocks(puzzle).map(findCands))
