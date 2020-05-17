@@ -40,7 +40,7 @@ object SolveSerialApp extends App {
   // Loop through and solve each puzzle.
   puzzles.foreach((puzzleStr : String) => {
 
-  // Parse puzzle line into block-major nested list of initial values or zero for unknowns.
+  // Parse puzzle line into row-major nested list of initial values or zero for unknowns.
   val puzzleNums = puzzleStr.map(c => if (c == '.') 0 else c.asDigit).toList
   val puzzle = puzzleNums.grouped(9).toList
 
