@@ -58,10 +58,10 @@ object SolveSerialApp extends App {
   val colCands = puzzle.transpose.map(findCands).transpose
   val blocksCands = transBlocks(transBlocks(puzzle).map(findCands))
   // Combine all candidates and group them by cell.
-  val allCands = List(rowCands, colCands, blocksCands).transpose.map(xs => xs.transpose)
+  val allCands = List(rowCands, colCands, blocksCands).transpose.map(_.transpose)
   // Find intersection of the candidates in each cell.
-  val foldInter = (xss : List[List[Int]]) => xss.foldLeft((1 to 9).toList)((l1, l2) => l1.intersect(l2))
-  var puzzleCands = allCands.map(xsss => xsss.map(foldInter))
+  val foldInter = (xss : List[List[Int]]) => xss.foldLeft((1 to 9).toList)(_.intersect(_))
+  var puzzleCands = allCands.map(_.map(foldInter))
 
   // Place the initial list of candidates in the queue.
   var searchQueue = List(puzzleCands)
