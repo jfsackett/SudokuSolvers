@@ -45,7 +45,7 @@ object SolveSerialApp extends App {
   val puzzle = puzzleNums.grouped(9).toList
 
   // Printing Utilities
-  val printPuzLine = (xs : List[Int]) => {xs.foreach(x => print(x + "  ")); println}
+  val printPuzLine = (xs : List[Int]) => {xs.foreach(x => print(s"$x  ")); println}
   val printCandLine = (xss : List[List[Int]]) => {xss.foreach({xs => xs.map(x => print(x)); print("  ")}); println}
   // Output puzzle.
   if (!quiet) {
@@ -56,9 +56,9 @@ object SolveSerialApp extends App {
   // Find row, column & block initial candidate lists.
   val rowCands = puzzle.map(findCands)
   val colCands = puzzle.transpose.map(findCands).transpose
-  val blocksCands = transBlocks(transBlocks(puzzle).map(findCands))
+  val blockCands = transBlocks(transBlocks(puzzle).map(findCands))
   // Combine all candidates and group them by cell.
-  val allCands = List(rowCands, colCands, blocksCands).transpose.map(_.transpose)
+  val allCands = List(rowCands, colCands, blockCands).transpose.map(_.transpose)
   // Find intersection of the candidates in each cell.
   val foldInter = (xss : List[List[Int]]) => xss.foldLeft((1 to 9).toList)(_.intersect(_))
   var puzzleCands = allCands.map(_.map(foldInter))
