@@ -60,8 +60,8 @@ object SolveSerialApp extends App {
   // Combine all candidates and group them by cell.
   val allCands = List(rowCands, colCands, blockCands).transpose.map(_.transpose)
   // Find intersection of the candidates in each cell.
-  val foldInter = (xss : List[List[Int]]) => xss.reduce(_.intersect(_))
-  var puzzleCands = allCands.map(_.map(foldInter))
+  val reduceInter = (xss : List[List[Int]]) => xss.reduce(_.intersect(_))
+  var puzzleCands = allCands.map(_.map(reduceInter))
 
   // Place the initial list of candidates in the queue.
   var searchQueue = List(puzzleCands)
