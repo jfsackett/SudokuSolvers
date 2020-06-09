@@ -209,7 +209,7 @@ object SolveSerialApp extends App {
         val blockRows = List(blockRowsT._1, blockRowsT._2, blockRowsT._3)
         // Get rows containing current block
         val rows = cands.drop((ix / 3) * 3).take(3)
-        // Scrub constraints from rows containing current block.
+        // Scrub constraint violations from rows containing current block.
         val result = scrubRows(blockRows, List[Int](), List[Int](), rows.map(xs => xs.take((ix % 3) * 3)), rows.map(xs => xs.drop(((ix % 3) + 1) * 3)))
         // Prepend & append other rows above & below those containing current block.
         cands.take((ix / 3) * 3) ::: result._1 ::: cands.drop((ix / 3 + 1) * 3)
