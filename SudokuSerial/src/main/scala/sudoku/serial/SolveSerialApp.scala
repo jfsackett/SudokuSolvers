@@ -88,14 +88,13 @@ object SolveSerialApp extends App {
       puzzleCands = scrubBlockConstraints(puzzleCands)
       // Scrub open tuples.
       puzzleCands = scrubCandidates(puzzleCands, scrubOpenTuples)
-      // Count remaining candidates.
-      numCandsCurr = puzzleCands.flatten.flatten.length
       // Scrub hidden tuples, need only be done once per puzzle.
       if (first) { first = false
             puzzleCands = scrubCandidates(puzzleCands, scrubHiddenTuples)
       }
       // Check for puzzle validity & count remaining candidates.
       validPuzzle = isValidCands(puzzleCands)
+      // Count remaining candidates.
       numCandsCurr = puzzleCands.flatten.flatten.length
     } while (validPuzzle && numCandsCurr > 81 && numCandsCurr < numCandsPrev)
     if (validPuzzle && numCandsCurr > 81) {
@@ -200,7 +199,7 @@ object SolveSerialApp extends App {
     }
 
     // Scrub a list of candidate rows' blocks (transpose to scrub columns' blocks).
-    def scrubBlocks(puzzleCands : List[List[List[Int]]])() : List[List[List[Int]]] = {
+    def scrubBlocks(puzzleCands : List[List[List[Int]]]) : List[List[List[Int]]] = {
       // Transform block candidates into rows for use determining constraints.
       val puzzleBlocks = transBlocks(puzzleCands)
       // Loop through all block numbers, updating candidates.
