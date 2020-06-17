@@ -31,8 +31,8 @@ object SolveSerialApp extends App {
   // Quiet flag indicates whether puzzles are printed.
   val quiet = args.length > 1 && args(0).startsWith("-q")
 
-  // Build cache holding powerset row cell indexes, 2 <= length <= 3.
-  val ixSubsets = (0 to 8).toSet.subsets.filter(xs => xs.size > 1 && xs.size < 4).map(xs => xs.toSet).toList
+  // Build cache holding powerset row cell indexes, 2 <= length <= 4.
+  val ixSubsets = (0 to 8).toSet.subsets.filter(xs => xs.size > 1 && xs.size < 5).map(xs => xs.toSet).toList
 
   // Record start time.
   val startTime =  System.currentTimeMillis()
@@ -221,7 +221,7 @@ object SolveSerialApp extends App {
 
   // Finds & removes open tuple values from candidate lists. Open tuples where length == count in row.
   def scrubOpenTuples(rowCands : List[List[Int]]) : List[List[Int]] = {
-    // Builds map of open tuples.
+    // Builds map of tuples to the # occurrences.
     val openTuples = rowCands.foldLeft(Map[List[Int], Int]())((result : Map[List[Int], Int], cands : List[Int]) =>
       if (cands.length > 1 && cands.length <= 4) result.get(cands) match {
         case None => result + (cands -> 1)
