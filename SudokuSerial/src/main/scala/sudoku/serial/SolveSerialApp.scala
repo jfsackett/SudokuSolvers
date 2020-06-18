@@ -94,7 +94,6 @@ object SolveSerialApp extends App {
       }
       // Check for puzzle validity & count remaining candidates.
       validPuzzle = isValidCands(puzzleCands)
-      // Count remaining candidates.
       numCandsCurr = puzzleCands.flatten.flatten.length
     } while (validPuzzle && numCandsCurr > 81 && numCandsCurr < numCandsPrev)
     if (validPuzzle && numCandsCurr > 81) {
