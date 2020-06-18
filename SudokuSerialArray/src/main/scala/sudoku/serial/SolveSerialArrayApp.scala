@@ -188,38 +188,38 @@ object SolveSerialArrayApp extends App {
       val blockRows = Array.ofDim[List[(Int,Int)]](3)
       val blockCols = Array.ofDim[List[(Int,Int)]](3)
       var ix = 0
-       blockCells.foreach(cell => {
-         val blockRow = ix / 3
-         blockRows(blockRow) = if (blockRows(blockRow) == null) List(cell) else cell :: blockRows(blockRow)
-         val blockCol = ix % 3
-         blockCols(blockCol) = if (blockCols(blockCol) == null) List(cell) else cell :: blockCols(blockCol)
-         ix += 1
-       })
-       // Collect row & column candidate values.
+      blockCells.foreach(cell => {
+        val blockRow = ix / 3
+        blockRows(blockRow) = if (blockRows(blockRow) == null) List(cell) else cell :: blockRows(blockRow)
+        val blockCol = ix % 3
+        blockCols(blockCol) = if (blockCols(blockCol) == null) List(cell) else cell :: blockCols(blockCol)
+        ix += 1
+      })
+      // Collect row & column candidate values.
       val blockRowCands = Array.ofDim[List[Int]](3)
       val blockColCands = Array.ofDim[List[Int]](3)
-       for (ix <- 0 to 2) {
-         blockRowCands(ix) = blockRows(ix).foldLeft(List[Int]())((xs, cell) => cell match {case (y,x) => cands(y)(x) ::: xs}).distinct
-         blockColCands(ix) = blockCols(ix).foldLeft(List[Int]())((xs, cell) => cell match {case (y,x) => cands(y)(x) ::: xs}).distinct
-       }
-       // Find each row & column's unique candidate values, by subtracting other rows' values.
+      for (ix <- 0 to 2) {
+        blockRowCands(ix) = blockRows(ix).foldLeft(List[Int]())((xs, cell) => cell match {case (y,x) => cands(y)(x) ::: xs}).distinct
+        blockColCands(ix) = blockCols(ix).foldLeft(List[Int]())((xs, cell) => cell match {case (y,x) => cands(y)(x) ::: xs}).distinct
+      }
+      // Find each row & column's unique candidate values, by subtracting other rows' values.
       val blockRowUnique = Array.ofDim[List[Int]](3)
       val blockColUnique = Array.ofDim[List[Int]](3)
-       for (ix <- 0 to 2) {
+      for (ix <- 0 to 2) {
         blockRowUnique(ix) = blockRowCands(ix).diff(blockRowCands((ix+1)%3)).diff(blockRowCands((ix+2)%3))
         blockColUnique(ix) = blockColCands(ix).diff(blockColCands((ix+1)%3)).diff(blockColCands((ix+2)%3))
-       }
+      }
       // Remove candidates unique to a block's row/column from that row/column external to block.
-       for (ix <- 0 to 2) {
-         if (blockRowUnique(ix).length > 0) {
-           val y = blockRows(ix).head._1
-           for (x <- 0 to 8) cands(y)(x) = if (!blockRows(ix).contains((y,x))) cands(y)(x).diff(blockRowUnique(ix)) else cands(y)(x)
-         }
-         if (blockColUnique(ix).length > 0) {
-           val x = blockCols(ix).head._2
-           for (y <- 0 to 8) cands(y)(x) = if (!blockCols(ix).contains((y,x))) cands(y)(x).diff(blockColUnique(ix)) else cands(y)(x)
-         }
-       }
+      for (ix <- 0 to 2) {
+        if (blockRowUnique(ix).length > 0) {
+          val y = blockRows(ix).head._1
+          for (x <- 0 to 8) cands(y)(x) = if (!blockRows(ix).contains((y,x))) cands(y)(x).diff(blockRowUnique(ix)) else cands(y)(x)
+        }
+        if (blockColUnique(ix).length > 0) {
+          val x = blockCols(ix).head._2
+          for (y <- 0 to 8) cands(y)(x) = if (!blockCols(ix).contains((y,x))) cands(y)(x).diff(blockColUnique(ix)) else cands(y)(x)
+        }
+      }
     })
   }
 
