@@ -240,7 +240,7 @@ object SolveSerialArrayApp extends App {
       })
   }
 
-  // Finds & removes hidden tuple values from input "row." Hidden tuples are a set of candidates S s.t. instances exist in exactly |s| cells.
+  // Finds & removes hidden tuple values from input "row." Hidden tuples are a set of candidates S s.t. instances exist in exactly |S| cells.
   def scrubHiddenTuples(cands : Array[Array[List[Int]]], ixs : List[(Int,Int)]) : Unit = {
     // Function determines whether a set of cells contains all unknown cells (i.e., multiple candidates).
     val multiCands = (xs : Set[(Int,Int)]) => xs.foldLeft(true)((b, cell) => cell match {case (y,x) =>
