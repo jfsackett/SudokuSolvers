@@ -55,8 +55,8 @@ object SolveSerialArrayApp extends App {
   // Build block major index into candidate array cells (blocks ordered in row major order).
   val ixBlockMajor = (0 to 8).foldRight(List[List[(Int,Int)]]())((y, xxs) => (0 to 8).foldRight(List[(Int,Int)]())((x, xs) => blockTuple(y * 9 + x) :: xs) :: xxs)
 
-  // Build cache mapping indexes to its powerset cell indexes, 2 <= length <= 3.
-  val mapSubsets = (ixss : List[List[(Int,Int)]]) => ixss.foldLeft(Map[List[(Int,Int)], List[Set[(Int,Int)]]]())((kv, ixs) => kv + (ixs -> (ixs.toSet.subsets(2).toList ::: ixs.toSet.subsets(3).toList)))
+  // Build cache mapping indexes to its powerset cell indexes, 2 <= length <= 4.
+  val mapSubsets = (ixss : List[List[(Int,Int)]]) => ixss.foldLeft(Map[List[(Int,Int)], List[Set[(Int,Int)]]]())((kv, ixs) => kv + (ixs -> (ixs.toSet.subsets(2).toList ::: ixs.toSet.subsets(3).toList ::: ixs.toSet.subsets(4).toList)))
   val kvSubsets = mapSubsets(ixRowMajor) ++ mapSubsets(ixColMajor) ++ mapSubsets(ixBlockMajor)
 
   // Record start time.
