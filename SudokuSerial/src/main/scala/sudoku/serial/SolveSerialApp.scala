@@ -271,18 +271,18 @@ object SolveSerialApp extends App {
     transBlocks(puzzleCands).foldRight(true)((xss : List[List[Int]], valid : Boolean) => valid && isValid(xss))
   }
 
-  // Find the successor states by making candidate assumptions from a given puzzle state.
+  // Build successor states by making candidate assumptions from input state.
   def findSuccessors(puzzleCands : List[List[List[Int]]]) : List[List[List[List[Int]]]] = {
     // Build list of candidate cell locations and their contents.
     val candCells = puzzleCands.foldRight((9, 8, List[(Int, Int, List[Int])]()))(
       (rowCands : List[List[Int]], result : (Int, Int, List[(Int, Int, List[Int])])) =>
       rowCands.foldRight((result._1 - 1, 8, result._3))((cands : List[Int], res : (Int, Int, List[(Int, Int, List[Int])])) =>
-        (res._1, res._2 - 1, if (cands.length > 1) (res._1, res._2, cands) :: res._3 else res._3)))
+        (res._1, res._2 - 1, if (cands.length > 1) (res._1, res._2, cands) :: res._3 else res._3)))._3
     // Stop making assumptions when there is only one unknown cell. Invalid puzzle.
-    if (candCells._3.length == 1) return List[List[List[List[Int]]]]()
+    if (candCells.length == 1) return List[List[List[List[Int]]]]()
     // Determine the shortest candidate list and use the find one of that size.
-    val minCands = candCells._3.foldLeft(Int.MaxValue)((res : Int, cands : (Int, Int, List[Int])) => res.min(cands._3.length))
-    candCells._3.find(_._3.length == minCands) match {
+    val minCands = candCells.foldLeft(Int.MaxValue)((res : Int, cands : (Int, Int, List[Int])) => res.min(cands._3.length))
+    candCells.find(_._3.length == minCands) match {
       case None => List[List[List[List[Int]]]]()
       case Some(unkCandCell) =>
         // Determine unchanged row & columns.
