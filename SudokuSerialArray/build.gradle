@@ -19,3 +19,12 @@ task run(type: JavaExec, dependsOn: classes) {
     main = 'sudoku.serial.SolveSerialArrayApp'
     classpath sourceSets.main.runtimeClasspath
 }
+
+
+jar {
+    zip64 true
+    archiveName = "sudoku.jar"
+    manifest {
+        attributes 'Main-Class': 'sudoku.serial.SolveSerialArrayApp'
+    }
+}
