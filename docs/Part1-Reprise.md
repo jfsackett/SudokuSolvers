@@ -9,7 +9,7 @@ Scala is a popular functional programming language. It is the primary language u
 This series documents my experience using Scala as a functional programming language to develop Sudoku solving algorithms. In the spirit of FP it uses mutation and imperative logic as little as possible but relaxes this in a few places to make the code look more natural. The goal is to analyze how difficult FP development is using Scala. I will address these three questions in the context of program design using the functional paradigm and programming in the Scala language:
 1. How easy is it to initially develop algorithms over complex data structures?
 2. How easily can the program design and source code be understood by other developers?
-3. Is the design extensible and code maintainable over time?
+3. Is the design extensible and code maintainable over time?  
 These are mostly subjective questions. This will present the raw information (source code) allowing the reader to form their own conclusions. I will also answer these questions myself by rating the development complexity of the solver components and source code.  
 Question 1 and 2 can be addressed at the time of development and documentation. Question 3 has a temporal component. My initial series addressed 1 and 2 but not 3. This series will address 3 by building a new version of the solver which changes the underlying data structure of the initial solver. This will allow me to see how well the prior design extends. This extensibility is a function of both the program design but also the constraints imposed by the programming paradigm; FP in this case.
 
@@ -22,7 +22,7 @@ These ratings serve to communicate the ideas within this post and are not scient
 ### Array Version Comparisons
 The new solver offers additional benefits. Now that I have new code executing the same algorithm, I can make comparisons across a couple additional dimensions:  
 - Code complexity
-- Performance
+- Performance  
 Measuring these is a secondary goal of this series. Looking at code complexity will show that different design and coding choices affect measurements of 1 and 2 above. Measuring performance (both abstractly and empirically) is typically very crucial, however, it is not the focus here. My analysis is focused on determining whether FP in general and specifically using the Scala language is a reasonable choice for complex software development.
 
 ### Installation and Execution
@@ -139,7 +139,7 @@ This post is the first in a series to analyze the applicability of FP and Scala 
 Here are the ratings for this component's design and source code:
 - Initial Development - **Medium**
 - Design Understanding - **Simple**
-- Program Extensibility - **Simple**
+- Program Extensibility - **Simple**  
 My findings indicate that the solver's high-level algorithm is straightforward to build, communicate, and extend using Scala. I believe this is primarily due to it being designed and programmed as an imperative algorithm using while loops as well as mutability. FP does not use these logic structures. It is necessary to dig into the next level of detail to see more functional code and get more ratings as data to answer the questions.  
 My next blog entry will peel off the next layer. I will look at the indices used to efficiently access the array cells in the new version of the solver. More soon.
 
