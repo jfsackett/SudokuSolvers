@@ -14,9 +14,9 @@ The case study is a light, anecdotal pass over this important question of whethe
 Below are all of the module ratings collected from the prior four blog posts comprising this series; one in each row. The three different rankings associate to different types of programmer interaction with software design and source code. Initial development naturally involves taking specifications and building working artifacts. Follow-on understanding is how difficult it is for later developers to interpret these artifacts. Extensibility is the ease with which changes or new functionality can be added to the existing design and source code.
 | Module | Initial Development | Follow-on Understanding | Extensibility |
 | --- | --- | --- | --- |
-| Main Elimination Loop | Medium | Simple | Simple -|
-| Array Access Indices | Simple | Medium | Trivial -|
-| Find Initial Candidates | Medium | Complicated | Simple -|
+| Main Elimination Loop | Medium | Simple | Simple |
+| Array Access Indices | Simple | Medium | Trivial |
+| Find Initial Candidates | Medium | Complicated | Simple |
 | Scrub Candidates | Simple | Simple | Medium |
 | Singles & Uniques | Medium | Medium | Simple |
 | Block Constraints | Complicated | Hard | Complicated |
