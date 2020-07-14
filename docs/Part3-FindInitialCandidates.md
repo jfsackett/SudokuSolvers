@@ -85,5 +85,5 @@ This code takes an input puzzle line and converts it into the main candidate dat
 
 The initial version's nested lists are tailored to FP but, as shown above, this source can obfuscate the functionality. The result is that version's higher difficulty ratings, both for development and understanding.  
 This is the third set of ratings. As this number increases a pattern may emerge. This is a specific type of program: algorithmic data transformation. Knowing Scala's strengths, this is a good application. If this introduced some bias, I will need to look at Scala in other parts of the stack as well.  
-Now that the candidate structures are built for each version, my next article will dig into the details of the eliminations in my next post. My first post showed their high-level calls from the main algorithm loop. For readers who solve Sudoku puzzles by hand, these will be very familiar and fun to see in Scala.  
+Now that the candidate structures are built for each version, my [next article](https://github.com/jfsackett/SudokuSolvers/blob/master/docs/Part4-EliminateCandidates.md) will dig into the details of the eliminations. My first post showed their high-level calls from the main algorithm loop. For readers who solve Sudoku puzzles by hand, these will be very familiar and fun to see in Scala.
 
