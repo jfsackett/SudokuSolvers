@@ -117,6 +117,6 @@ Here are my difficulty ratings for these elements:
 - Design Understanding - **Medium**
 - Program Extensibility - **Trivial**
 
-These transposition and index components are building blocks of the original and enhanced versions of the solver, respectively. I will show how these are used in the functional design and source code throughout these versions. My next post will cover the development complexity of the candidate discovery routines.  
+These transposition and index components are building blocks of the original and enhanced versions of the solver, respectively. I will show how these are used in the functional design and source code throughout these versions. My [next post](https://github.com/jfsackett/SudokuSolvers/blob/master/docs/Part3-FindInitialCandidates.md) will cover the development complexity of the candidate discovery routines.  
 In the meantime, happy Scala programming & Sudoku solving. =)
 
