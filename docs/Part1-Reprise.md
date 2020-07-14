@@ -145,5 +145,5 @@ Here are the ratings for this component's design and source code:
 - Program Extensibility - **Simple**
 
 My findings indicate that the solver's high-level algorithm is straightforward to build, communicate, and extend using Scala. I believe this is primarily due to it being designed and programmed as an imperative algorithm using while loops as well as mutability. FP does not use these logic structures. It is necessary to dig into the next level of detail to see more functional code and get more ratings as data to answer the questions.  
-My next blog entry will peel off the next layer. I will look at the indices used to efficiently access the array cells in the new version of the solver. More soon.
+My [next blog entry](https://github.com/jfsackett/SudokuSolvers/blob/master/docs/Part2-ArrayAccessIndices.md) will peel off the next layer. I will look at the indices used to efficiently access the array cells in the new version of the solver. More soon.
 
